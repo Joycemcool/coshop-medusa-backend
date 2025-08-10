@@ -1,0 +1,241 @@
+{
+  "info": {
+    "name": "Co-Shop Vendor APIs",
+    "description": "Multi-vendor marketplace APIs for Co-Shop farmer platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:9000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "Store APIs",
+      "item": [
+        {
+          "name": "Get All Vendors (Customer View)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/store/vendors",
+              "host": ["{{baseUrl}}"],
+              "path": ["store", "vendors"]
+            }
+          }
+        },
+        {
+          "name": "Get Specific Vendor",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/store/vendors/vendor_01234567890",
+              "host": ["{{baseUrl}}"],
+              "path": ["store", "vendors", "vendor_01234567890"]
+            }
+          }
+        },
+        {
+          "name": "Get Vendor Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/store/vendors/vendor_01234567890/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["store", "vendors", "vendor_01234567890", "products"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin APIs",
+      "item": [
+        {
+          "name": "Admin Login (Get JWT Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.token) {",
+                  "        pm.environment.set('jwtToken', jsonData.token);",
+                  "        console.log('JWT Token saved successfully');",
+                  "    }",
+                  "    pm.test('Authentication successful', function () {",
+                  "        pm.response.to.have.status(200);",
+                  "    });",
+                  "} else {",
+                  "    console.log('Authentication failed:', pm.response.text());",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@coshop.com\",\n  \"password\": \"supersecret123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/user/emailpass",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "user", "emailpass"]
+            }
+          }
+        },
+        {
+          "name": "Get All Vendors (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwtToken}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/vendors",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "vendors"]
+            }
+          }
+        },
+        {
+          "name": "Create New Vendor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "{{authCookies}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test.farmer@example.com\",\n  \"name\": \"Test Farmer\",\n  \"farm_name\": \"Test Farm\",\n  \"farm_description\": \"A test farm for demonstration\",\n  \"phone\": \"+1-555-TEST\",\n  \"address\": \"123 Test Street\",\n  \"city\": \"Test City\",\n  \"state\": \"CA\",\n  \"zip_code\": \"12345\",\n  \"country\": \"USA\",\n  \"commission_rate\": 10.0,\n  \"is_active\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/vendors",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "vendors"]
+            }
+          }
+        },
+        {
+          "name": "Get Specific Vendor (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "{{authCookies}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/vendors/vendor_01234567890",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "vendors", "vendor_01234567890"]
+            }
+          }
+        },
+        {
+          "name": "Update Vendor",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "{{authCookies}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"farm_description\": \"Updated farm description\",\n  \"commission_rate\": 12.0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/vendors/vendor_01234567890",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "vendors", "vendor_01234567890"]
+            }
+          }
+        },
+        {
+          "name": "Approve Vendor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "{{authCookies}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/vendors/vendor_01234567890/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "vendors", "vendor_01234567890", "approve"]
+            }
+          }
+        },
+        {
+          "name": "Delete Vendor",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "{{authCookies}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/vendors/vendor_01234567890",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "vendors", "vendor_01234567890"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
