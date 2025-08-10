@@ -1,3 +1,78 @@
+# Co-Shop MedusaJS Backend
+
+E-commerce backend for Co-Shop farmer marketplace built with MedusaJS.
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Node.js 20+
+- PostgreSQL
+- Git
+
+### Database Setup
+The backend uses PostgreSQL database `medusa_coshop` with connection:
+```
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/medusa_coshop
+```
+
+**PostgreSQL Credentials:**
+- Username: `postgres`
+- Password: `postgres`
+- Database: `medusa_coshop`
+- Host: `localhost`
+- Port: `5432`
+
+### Development Server
+```bash
+npm run dev
+```
+Server runs on: http://localhost:9000
+Admin Panel: http://localhost:9000/app
+
+### Admin User Credentials
+**Email**: `admin@coshop.com`
+**Password**: `supersecret123`
+
+Use these credentials to access the admin panel at http://localhost:9000/app
+
+## 📋 API Endpoints
+
+- **Store API**: http://localhost:9000/store
+- **Admin API**: http://localhost:9000/admin  
+- **Health Check**: http://localhost:9000/health
+
+## 🔧 Environment Variables
+
+Key environment variables in `.env`:
+- `DATABASE_URL`: PostgreSQL connection string
+- `JWT_SECRET`: JWT token secret
+- `COOKIE_SECRET`: Session cookie secret
+- `STORE_CORS`: Frontend CORS URLs
+- `ADMIN_CORS`: Admin panel CORS URLs
+
+## 🏗️ Project Structure
+
+```
+src/
+├── admin/          # Admin panel customizations
+├── api/            # Custom API routes
+├── jobs/           # Background jobs
+├── modules/        # Custom modules
+├── scripts/        # Database scripts
+├── subscribers/    # Event subscribers
+└── workflows/      # Custom workflows
+```
+
+## 🌱 Next Steps
+
+1. Create admin user: `npx medusa user --email admin@coshop.com --password supersecret123`
+2. Seed sample data: `npm run seed`
+3. Access admin panel: http://localhost:9000/app
+4. Configure farmer-specific features
+5. Connect React frontend
+
+---
+
 <p align="center">
   <a href="https://www.medusajs.com">
   <picture>
@@ -19,28 +94,6 @@
 <p align="center">
   Building blocks for digital commerce
 </p>
-<p align="center">
-  <a href="https://github.com/medusajs/medusa/blob/master/CONTRIBUTING.md">
-    <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat" alt="PRs welcome!" />
-  </a>
-    <a href="https://www.producthunt.com/posts/medusa"><img src="https://img.shields.io/badge/Product%20Hunt-%231%20Product%20of%20the%20Day-%23DA552E" alt="Product Hunt"></a>
-  <a href="https://discord.gg/xpCwq3Kfn8">
-    <img src="https://img.shields.io/badge/chat-on%20discord-7289DA.svg" alt="Discord Chat" />
-  </a>
-  <a href="https://twitter.com/intent/follow?screen_name=medusajs">
-    <img src="https://img.shields.io/twitter/follow/medusajs.svg?label=Follow%20@medusajs" alt="Follow @medusajs" />
-  </a>
-</p>
-
-## Compatibility
-
-This starter is compatible with versions >= 2 of `@medusajs/medusa`. 
-
-## Getting Started
-
-Visit the [Quickstart Guide](https://docs.medusajs.com/learn/installation) to set up a server.
-
-Visit the [Docs](https://docs.medusajs.com/learn/installation#get-started) to learn more about our system requirements.
 
 ## What is Medusa
 
