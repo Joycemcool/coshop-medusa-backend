@@ -39,7 +39,7 @@ export default class VendorService {
       const result = await this.pool.query(`
         SELECT id, name, email, phone, address, city, state, zip_code, country,
                farm_name, farm_description, farm_logo, location, description,
-               is_active, commission_rate, category, services, verified_at,
+               is_active, commission_rate, category, services,
                created_at, updated_at
         FROM vendor 
         WHERE is_active = true
@@ -63,7 +63,7 @@ export default class VendorService {
       const result = await this.pool.query(`
         SELECT id, name, email, phone, address, city, state, zip_code, country,
                farm_name, farm_description, farm_logo, location, description,
-               is_active, commission_rate, category, services, verified_at,
+               is_active, commission_rate, category, services,
                created_at, updated_at
         FROM vendor 
         WHERE id = $1
