@@ -1,6 +1,5 @@
-import { Vendor } from "../models/vendor"
-
 type VendorData = {
+  id?: string
   email: string
   name: string
   description?: string
@@ -15,91 +14,136 @@ type VendorData = {
   farm_logo?: string
   is_active?: boolean
   commission_rate?: number
+  category?: string
+  location?: string
+  services?: string[]
 }
 
-type VendorType = {
-  id: string
-  email: string
-  name: string
-  description?: string
-  phone?: string
-  address?: string
-  city?: string
-  state?: string
-  zip_code?: string
-  country?: string
-  farm_name?: string
-  farm_description?: string
-  farm_logo?: string
-  is_active: boolean
-  commission_rate: number
-  verified_at?: Date
-  created_at: Date
-  updated_at: Date
-}
+// In-memory storage for vendors (will be replaced by database later)
+const VENDOR_STORAGE = new Map<string, any>();
 
 export default class VendorService {
-  private vendors: VendorType[] = [] // In-memory storage for now
+  protected readonly container_
 
-  async create(vendorData: VendorData): Promise<VendorType> {
-    const vendor: VendorType = {
-      id: `vendor_${Date.now()}`,
-      email: vendorData.email,
-      name: vendorData.name,
-      description: vendorData.description,
-      phone: vendorData.phone,
-      address: vendorData.address,
-      city: vendorData.city,
-      state: vendorData.state,
-      zip_code: vendorData.zip_code,
-      country: vendorData.country,
-      farm_name: vendorData.farm_name,
-      farm_description: vendorData.farm_description,
-      farm_logo: vendorData.farm_logo,
+  constructor(container) {
+    this.container_ = container
+  }
+
+  // Create a new vendor
+  async create(vendorData: VendorData) {
+    const vendor = {
+      id: vendorData.id || `vendor_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      ...vendorData,
       is_active: vendorData.is_active ?? true,
       commission_rate: vendorData.commission_rate ?? 0,
       created_at: new Date(),
       updated_at: new Date()
     }
     
-    this.vendors.push(vendor)
+    VENDOR_STORAGE.set(vendor.id, vendor);
+    console.log(`✅ Created vendor: ${vendor.name} (Total: ${VENDOR_STORAGE.size})`);
     return vendor
   }
 
-  async retrieve(id: string): Promise<VendorType> {
-    const vendor = this.vendors.find(v => v.id === id)
+  // Retrieve a vendor by ID  
+  async retrieve(id: string) {
+    const vendor = VENDOR_STORAGE.get(id);
     if (!vendor) {
       throw new Error(`Vendor with id ${id} not found`)
     }
     return vendor
   }
 
-  async list(): Promise<VendorType[]> {
-    return this.vendors
-  }
-
-  async update(id: string, update: Partial<VendorData>): Promise<VendorType> {
-    const vendor = await this.retrieve(id)
-    Object.assign(vendor, update)
-    vendor.updated_at = new Date()
-    return vendor
-  }
-
-  async delete(id: string): Promise<void> {
-    const index = this.vendors.findIndex(v => v.id === id)
-    if (index !== -1) {
-      this.vendors.splice(index, 1)
+  // List all vendors
+  async list(filters = {}) {
+    const { Client } = require('pg');
+    const client = new Client({
+      connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/medusa_coshop',
+    });
+    
+    try {
+      await client.connect();
+      
+      // Build WHERE clause from filters
+      let whereClause = 'WHERE 1=1';
+      const queryParams: any[] = [];
+      let paramCount = 1;
+      
+      Object.entries(filters).forEach(([key, value]) => {
+        whereClause += ` AND ${key} = $${paramCount}`;
+        queryParams.push(value);
+        paramCount++;
+      });
+      
+      const query = `SELECT * FROM vendor ${whereClause} ORDER BY name`;
+      const result = await client.query(query, queryParams);
+      
+      console.log(`📋 Retrieved ${result.rows.length} vendors from database`);
+      return result.rows;
+    } catch (error) {
+      console.error('Error fetching vendors:', error);
+      return [];
+    } finally {
+      await client.end();
     }
   }
 
-  async getByEmail(email: string): Promise<VendorType | null> {
-    return this.vendors.find(v => v.email === email) || null
+  // Update a vendor
+  async update(id: string, updateData: Partial<VendorData>) {
+    const vendor = VENDOR_STORAGE.get(id);
+    if (!vendor) {
+      throw new Error(`Vendor with id ${id} not found`);
+    }
+    
+    const updatedVendor = {
+      ...vendor,
+      ...updateData,
+      updated_at: new Date()
+    }
+    
+    VENDOR_STORAGE.set(id, updatedVendor);
+    return updatedVendor
   }
 
-  async approveVendor(id: string): Promise<VendorType> {
-    return this.update(id, { 
-      verified_at: new Date(),
+  // Delete a vendor
+  async delete(id: string) {
+    const deleted = VENDOR_STORAGE.delete(id);
+    if (!deleted) {
+      throw new Error(`Vendor with id ${id} not found`);
+    }
+    return { id, deleted: true }
+  }
+
+  // Find vendor by email
+  async getByEmail(email: string) {
+    const vendors = Array.from(VENDOR_STORAGE.values());
+    return vendors.find(v => v.email === email) || null
+  }
+
+  // Approve a vendor
+  async approveVendor(id: string) {
+    return await this.update(id, { 
       is_active: true 
-    } as any)
+    })
+  }
+
+  // Search vendors
+  async search(query: string) {
+    const vendors = Array.from(VENDOR_STORAGE.values());
+    return vendors.filter(vendor => 
+      vendor.name.toLowerCase().includes(query.toLowerCase()) ||
+      vendor.farm_name?.toLowerCase().includes(query.toLowerCase()) ||
+      vendor.description?.toLowerCase().includes(query.toLowerCase())
+    )
+  }
+
+  // Get vendors by category
+  async listByCategory(category: string) {
+    return await this.list({ category })
+  }
+
+  // Get active vendors only
+  async listActive() {
+    return await this.list({ is_active: true })
   }
 }

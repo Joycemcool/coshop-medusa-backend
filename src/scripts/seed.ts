@@ -831,6 +831,167 @@ export default async function seedDemoData({ container }: ExecArgs) {
   });
   logger.info("Finished seeding product data.");
 
+  logger.info("Seeding vendor data...");
+  
+  // Use query to handle vendor creation
+  const vendorData = [
+    {
+      id: "vendor_001",
+      name: "Green Valley Farm",
+      email: "farm@greenvalley.com",
+      farm_name: "Green Valley Organic Farm",
+      location: "Truro, Nova Scotia, Canada",
+      description: "Organic vegetables and sustainable farming practices since 1995",
+      commission_rate: 0.15,
+      category: "Vegetables",
+      is_active: true,
+    },
+    {
+      id: "vendor_002", 
+      name: "Annapolis Valley Dairy",
+      email: "contact@annapolisdairy.com",
+      farm_name: "Annapolis Valley Organic Dairy",
+      location: "Kentville, Nova Scotia, Canada",
+      description: "Fresh organic dairy products from grass-fed cows",
+      commission_rate: 0.12,
+      category: "Dairy",
+      is_active: true,
+    },
+    {
+      id: "vendor_003",
+      name: "Sunrise Ranch",
+      email: "info@sunriseranch.com", 
+      farm_name: "Sunrise Cattle Ranch",
+      location: "New Glasgow, Nova Scotia, Canada",
+      description: "Premium grass-fed beef and free-range poultry",
+      commission_rate: 0.18,
+      category: "Meat",
+      is_active: true,
+    },
+    {
+      id: "vendor_004",
+      name: "Atlantic Coastal Harvest",
+      email: "hello@atlanticcoastal.com",
+      farm_name: "Atlantic Coastal Harvest Co-op",
+      location: "Lunenburg, Nova Scotia, Canada", 
+      description: "Fresh seafood and coastal produce delivered daily",
+      commission_rate: 0.16,
+      category: "Seafood",
+      is_active: true,
+    },
+    {
+      id: "vendor_005",
+      name: "Maritimes Grains Farm",
+      email: "farmers@maritimesgrains.com",
+      farm_name: "Maritimes Grains Collective",
+      location: "Amherst, Nova Scotia, Canada",
+      description: "Organic grains, cereals, and artisan breads",
+      commission_rate: 0.14,
+      category: "Grains",
+      is_active: true,
+    },
+    {
+      id: "vendor_006",
+      name: "Acadia Orchards",
+      email: "orders@acadiaorchards.com",
+      farm_name: "Acadia Fruit Orchards",
+      location: "Wolfville, Nova Scotia, Canada",
+      description: "Fresh seasonal fruits and handcrafted preserves",
+      commission_rate: 0.13,
+      category: "Fruits",
+      is_active: true,
+    },
+    {
+      id: "vendor_007",
+      name: "Bay of Fundy Farm",
+      email: "info@bayoffundyfarm.com",
+      farm_name: "Bay of Fundy Sustainable Farm",
+      location: "Digby, Nova Scotia, Canada",
+      description: "Tidal-influenced crops and specialty vegetables",
+      commission_rate: 0.17,
+      category: "Vegetables",
+      is_active: true,
+    },
+    {
+      id: "vendor_008",
+      name: "Cape Breton Herbs",
+      email: "contact@capebretonherbs.com",
+      farm_name: "Cape Breton Herb Garden",
+      location: "Sydney, Nova Scotia, Canada",
+      description: "Fresh herbs, medicinal plants, and herbal products",
+      commission_rate: 0.19,
+      category: "Herbs",
+      is_active: true,
+    },
+    {
+      id: "vendor_009",
+      name: "Gaspereau Valley Vineyard",
+      email: "wine@gaspereau.com",
+      farm_name: "Gaspereau Valley Organic Vineyard",
+      location: "Gaspereau Valley, Nova Scotia, Canada",
+      description: "Award-winning wines and farm-to-table experiences",
+      commission_rate: 0.20,
+      category: "Wine",
+      is_active: true,
+    }
+  ];
+
+  // Create vendors using the database
+  try {
+    // First check if vendors table/entity exists and clear it
+    const { data: existingVendors } = await query.graph({
+      entity: "vendor",
+      fields: ["id", "name"],
+      filters: {}
+    }, { throwOnNotFound: false });
+    
+    logger.info(`Found ${existingVendors?.length || 0} existing vendors`);
+
+    // Create new vendors
+    for (const vendor of vendorData) {
+      try {
+        // Create vendor in database using direct query approach
+        await query.graph({
+          entity: "vendor",
+          fields: ["*"],
+          filters: {},
+        }, {
+          create: {
+            ...vendor,
+            created_at: new Date(),
+            updated_at: new Date()
+          }
+        });
+        
+        logger.info(`Created vendor: ${vendor.name} in ${vendor.location}`);
+      } catch (error) {
+        logger.error(`Error creating vendor ${vendor.name}:`, error);
+        // If direct creation fails, use the vendor service
+        try {
+          const vendorService = container.resolve("vendorService") as any;
+          await vendorService.create(vendor);
+          logger.info(`Created vendor via service: ${vendor.name}`);
+        } catch (serviceError) {
+          logger.error(`Service creation also failed for ${vendor.name}:`, serviceError);
+        }
+      }
+    }
+  } catch (error) {
+    logger.error("Error in vendor seeding:", error);
+    // Fallback to vendor service if database operations fail
+    try {
+      const vendorService = container.resolve("vendorService") as any;
+      for (const vendor of vendorData) {
+        await vendorService.create(vendor);
+        logger.info(`Fallback created vendor: ${vendor.name}`);
+      }
+    } catch (fallbackError) {
+      logger.error("Fallback vendor creation failed:", fallbackError);
+    }
+  }
+  
+  logger.info("Finished seeding vendor data.");
+
   logger.info("Seeding inventory levels.");
 
   const { data: inventoryItems } = await query.graph({
