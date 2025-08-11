@@ -14,6 +14,9 @@ export const Vendor = model.define("vendor", {
   farm_name: model.text().searchable().nullable(),
   farm_description: model.text().nullable(),
   farm_logo: model.text().nullable(),
+  location: model.text().nullable(), // Added location field
+  category: model.text().nullable(), // Added category field
+  services: model.text().nullable(), // Added services field (JSON string)
   is_active: model.boolean().default(true),
   commission_rate: model.number().default(0),
   verified_at: model.dateTime().nullable(),
