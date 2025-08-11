@@ -31,11 +31,15 @@
     "@mikro-orm/knex": "6.4.3",
     "@mikro-orm/migrations": "6.4.3",
     "@mikro-orm/postgresql": "6.4.3",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/pg": "^8.15.5",
     "awilix": "^8.0.1",
+    "bcryptjs": "^3.0.2",
+    "jsonwebtoken": "^9.0.2",
     "node-fetch": "^2.7.0",
     "pg": "^8.16.3",
-    "sqlite3": "^5.1.7"
+    "sqlite3": "^5.1.7",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@medusajs/test-utils": "2.8.8",
