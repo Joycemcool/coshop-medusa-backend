@@ -21,9 +21,10 @@ export async function GET(req: Request, res: Response) {
         p.*,
         v.name as vendor_name,
         v.farm_name,
+        v.farm_description,
         v.location as vendor_location
       FROM product p
-      LEFT JOIN vendors v ON p.vendor_id = v.id
+      LEFT JOIN vendor v ON p.vendor_id = v.id
       WHERE p.vendor_id IS NOT NULL 
         AND p.status = 'published'
         AND v.is_active = true
