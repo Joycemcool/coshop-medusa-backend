@@ -1,0 +1,90 @@
+// Simple HTML page to generate test images
+// Open this in browser, right-click and save images to the uploads folder
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate Test Images</title>
+</head>
+<body>
+    <h1>Test Images for Co-Shop</h1>
+    
+    <div style="margin: 20px;">
+        <h2>Tomatoes</h2>
+        <canvas id="tomatoes" width="800" height="600" style="border: 1px solid #ccc;"></canvas>
+        <br>
+        <button onclick="downloadImage('tomatoes', 'test-tomatoes.jpg')">Download Tomatoes Image</button>
+    </div>
+    
+    <div style="margin: 20px;">
+        <h2>Carrots</h2>
+        <canvas id="carrots" width="800" height="600" style="border: 1px solid #ccc;"></canvas>
+        <br>
+        <button onclick="downloadImage('carrots', 'test-carrots.jpg')">Download Carrots Image</button>
+    </div>
+
+    <script>
+        // Create tomatoes image
+        const tomatoCanvas = document.getElementById('tomatoes');
+        const tomatoCtx = tomatoCanvas.getContext('2d');
+        
+        // Background
+        tomatoCtx.fillStyle = '#90EE90';
+        tomatoCtx.fillRect(0, 0, 800, 600);
+        
+        // Tomatoes
+        tomatoCtx.fillStyle = '#FF6347';
+        tomatoCtx.beginPath();
+        tomatoCtx.arc(200, 200, 80, 0, 2 * Math.PI);
+        tomatoCtx.fill();
+        
+        tomatoCtx.beginPath();
+        tomatoCtx.arc(400, 300, 90, 0, 2 * Math.PI);
+        tomatoCtx.fill();
+        
+        tomatoCtx.beginPath();
+        tomatoCtx.arc(600, 250, 75, 0, 2 * Math.PI);
+        tomatoCtx.fill();
+        
+        // Text
+        tomatoCtx.fillStyle = '#000';
+        tomatoCtx.font = '48px Arial';
+        tomatoCtx.fillText('Fresh Organic Tomatoes', 150, 500);
+        
+        // Create carrots image
+        const carrotCanvas = document.getElementById('carrots');
+        const carrotCtx = carrotCanvas.getContext('2d');
+        
+        // Background
+        carrotCtx.fillStyle = '#DEB887';
+        carrotCtx.fillRect(0, 0, 800, 600);
+        
+        // Carrots
+        carrotCtx.fillStyle = '#FF8C00';
+        carrotCtx.fillRect(150, 200, 40, 200);
+        carrotCtx.fillRect(300, 180, 40, 220);
+        carrotCtx.fillRect(450, 190, 40, 210);
+        carrotCtx.fillRect(600, 170, 40, 230);
+        
+        // Green tops
+        carrotCtx.fillStyle = '#228B22';
+        carrotCtx.fillRect(145, 150, 50, 60);
+        carrotCtx.fillRect(295, 130, 50, 60);
+        carrotCtx.fillRect(445, 140, 50, 60);
+        carrotCtx.fillRect(595, 120, 50, 60);
+        
+        // Text
+        carrotCtx.fillStyle = '#000';
+        carrotCtx.font = '48px Arial';
+        carrotCtx.fillText('Fresh Organic Carrots', 180, 500);
+        
+        function downloadImage(canvasId, filename) {
+            const canvas = document.getElementById(canvasId);
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/jpeg', 0.8);
+            link.click();
+        }
+    </script>
+</body>
+</html>
