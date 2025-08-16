@@ -16,7 +16,7 @@ interface ReviewCreateRequest {
 
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
   try {
-    console.log('Store reviews request received')
+    console.log('Custom reviews request received')
     
     // Set CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*')
