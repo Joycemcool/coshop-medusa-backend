@@ -63,6 +63,9 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
     res.setHeader('Content-Length', stats.size)
     res.setHeader('Cache-Control', 'public, max-age=31536000') // Cache for 1 year
     res.setHeader('ETag', `"${stats.mtime.getTime()}-${stats.size}"`)
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.setHeader('Access-Control-Allow-Methods', 'GET')
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
 
     // Stream the file
     const fileStream = fs.createReadStream(filePath)
