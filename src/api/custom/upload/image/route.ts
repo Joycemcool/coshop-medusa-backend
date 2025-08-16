@@ -30,12 +30,10 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
       keepExtensions: true,
       maxFileSize: 10 * 1024 * 1024, // 10MB
       filename: (name, ext, part) => {
-        // Generate unique filename
+        // Temporary filename - will be renamed after parsing
         const timestamp = Date.now()
         const randomNum = Math.floor(Math.random() * 1000)
-        const originalName = part.originalFilename || 'image'
-        const nameWithoutExt = path.basename(originalName, path.extname(originalName))
-        return `${nameWithoutExt}-${timestamp}-${randomNum}${ext}`
+        return `temp-${timestamp}-${randomNum}${ext}`
       }
     })
 
@@ -52,20 +50,50 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
       })
     }
 
+    // Extract farmer and product IDs from form fields
+    const farmerId = Array.isArray(fields.farmerId) ? fields.farmerId[0] : fields.farmerId
+    const productId = Array.isArray(fields.productId) ? fields.productId[0] : fields.productId
+    const imageName = Array.isArray(fields.imageName) ? fields.imageName[0] : fields.imageName
+    
     console.log('🖼️ Processing image:', imageFile.originalFilename)
-    console.log('💾 Saved to:', imageFile.filepath)
+    console.log('�‍🌾 Farmer ID:', farmerId)
+    console.log('📦 Product ID:', productId)
+    console.log('🏷️ Image Name:', imageName)
+
+    // Generate proper filename using naming convention
+    const fileExtension = path.extname(imageFile.originalFilename || '').toLowerCase()
+    const baseImageName = imageName || path.basename(imageFile.originalFilename || '', fileExtension)
+    
+    let finalFilename: string
+    if (farmerId && productId) {
+      // Use farmer-product naming convention: farmer{farmerId}-product{productId}-{imageName}.{ext}
+      finalFilename = `farmer-${farmerId}-product-${productId}-${baseImageName}${fileExtension}`
+    } else if (farmerId) {
+      // Use farmer naming convention: farmer{farmerId}-{imageName}.{ext}
+      finalFilename = `farmer-${farmerId}-${baseImageName}${fileExtension}`
+    } else {
+      // Fallback to timestamp naming
+      const timestamp = Date.now()
+      finalFilename = `${timestamp}-${baseImageName}${fileExtension}`
+    }
+
+    console.log('📝 Generated filename:', finalFilename)
+
+    // Rename the uploaded file to use proper convention
+    const finalPath = path.join(originalDir, finalFilename)
+    fs.renameSync(imageFile.filepath, finalPath)
+    console.log('💾 Renamed file to:', finalPath)
 
     // Get image metadata
-    const metadata = await sharp(imageFile.filepath).metadata()
+    const metadata = await sharp(finalPath).metadata()
     console.log('📐 Image dimensions:', metadata.width, 'x', metadata.height)
 
-    // Create filename for variants
-    const filename = path.basename(imageFile.filepath)
-    const mediumPath = path.join(mediumDir, filename)
-    const thumbnailPath = path.join(thumbnailDir, filename)
+    // Create paths for variants using the final filename
+    const mediumPath = path.join(mediumDir, finalFilename)
+    const thumbnailPath = path.join(thumbnailDir, finalFilename)
 
     // Create medium size (400px width)
-    await sharp(imageFile.filepath)
+    await sharp(finalPath)
       .resize(400, null, { 
         withoutEnlargement: true,
         fit: 'inside'
@@ -75,7 +103,7 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     console.log('📷 Created medium image:', mediumPath)
 
     // Create thumbnail (150x150)
-    await sharp(imageFile.filepath)
+    await sharp(finalPath)
       .resize(150, 150, { 
         fit: 'cover',
         position: 'center'
@@ -89,12 +117,12 @@ export const POST = async (req: MedusaRequest, res: MedusaResponse) => {
     
     const imageData = {
       id: `img_${Date.now()}`,
-      url: `${baseUrl}/original/${filename}`,
-      original_url: `${baseUrl}/original/${filename}`,
-      medium_url: `${baseUrl}/medium/${filename}`,
-      thumbnail_url: `${baseUrl}/thumbnail/${filename}`,
+      url: `${baseUrl}/original/${finalFilename}`,
+      original_url: `${baseUrl}/original/${finalFilename}`,
+      medium_url: `${baseUrl}/medium/${finalFilename}`,
+      thumbnail_url: `${baseUrl}/thumbnail/${finalFilename}`,
       alt_text: path.basename(imageFile.originalFilename || '', path.extname(imageFile.originalFilename || '')),
-      file_name: filename,
+      file_name: finalFilename,
       file_size: imageFile.size,
       width: metadata.width || 0,
       height: metadata.height || 0,
